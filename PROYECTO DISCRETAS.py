@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import sys
 
 # Crear un grafo no dirigido y ponderado w
 G = nx.Graph()
@@ -99,28 +100,63 @@ edges = [
 # Añadir aristas y pesos al grafo
 G.add_weighted_edges_from(edges)
 
-# Algoritmo de Dijkstra
-def dijkstra_camino_mas_corto(grafo, inicio, fin):
-    try:
-        # Usar el algoritmo de Dijkstra en NetworkX
-        camino = nx.dijkstra_path(grafo, source=inicio, target=fin, weight="weight")
-        distancia_total = nx.dijkstra_path_length(grafo, source=inicio, target=fin, weight="weight")
-        
-        print(f"\nCamino más corto entre {inicio} y {fin}:")
-        for i in range(len(camino) - 1):
-            origen, destino = camino[i], camino[i + 1]
-            distancia = grafo[origen][destino]['weight']
-            print(f"   {origen} -> {destino}: {distancia} metros")
-        
-        print(f"\nDistancia total del camino más corto: {distancia_total} metros\n")
-        
-        return camino
-    except nx.NetworkXNoPath:
+# Implementación del algoritmo de Dijkstra
+def dijkstra_custom(grafo, inicio, fin):
+    # Inicialización
+    distancias = {nodo: sys.maxsize for nodo in grafo.nodes}
+    distancias[inicio] = 0
+    padres = {nodo: None for nodo in grafo.nodes}
+    visitados = set()
+
+    while True:
+        # Seleccionar el nodo no visitado con la distancia mínima
+        nodo_actual = None
+        for nodo in grafo.nodes:
+            if nodo not in visitados:
+                if nodo_actual is None or distancias[nodo] < distancias[nodo_actual]:
+                    nodo_actual = nodo
+
+        if nodo_actual is None or distancias[nodo_actual] == sys.maxsize:
+            # No quedan nodos accesibles o alcanzamos un nodo no accesible
+            break
+
+        # Marcar el nodo actual como visitado
+        visitados.add(nodo_actual)
+
+        # Actualizar las distancias de los vecinos
+        for vecino in grafo.neighbors(nodo_actual):
+            peso = grafo[nodo_actual][vecino]['weight']
+            nueva_distancia = distancias[nodo_actual] + peso
+
+            if nueva_distancia < distancias[vecino]:
+                distancias[vecino] = nueva_distancia
+                padres[vecino] = nodo_actual
+
+        # Parar si llegamos al destino
+        if nodo_actual == fin:
+            break
+
+    # Reconstruir el camino más corto desde el nodo final al inicio
+    camino = []
+    nodo = fin
+    while nodo is not None:
+        camino.insert(0, nodo)
+        nodo = padres[nodo]
+
+    # Verificar si se alcanzó el destino
+    if distancias[fin] == sys.maxsize:
         print("No hay camino disponible entre", inicio, "y", fin)
         return None
-    except nx.NodeNotFound:
-        print("Uno o ambos nodos no existen en el grafo.")
-        return None
+
+    # Imprimir la distancia total y el camino
+    print(f"\nCamino más corto entre {inicio} y {fin}:")
+    for i in range(len(camino) - 1):
+        origen, destino = camino[i], camino[i + 1]
+        distancia = grafo[origen][destino]['weight']
+        print(f"   {origen} -> {destino}: {distancia} metros")
+    print(f"\nDistancia total del camino más corto: {distancias[fin]} metros\n")
+
+    return camino
 
 # Función para visualizar el grafo y el camino más corto
 def visualizar_camino():
@@ -128,7 +164,7 @@ def visualizar_camino():
     print("Cualquier otra ubicacion que no este en las referencias por favor marque el numero del nodo (Ej. N#) ")
     inicio = input("Ingrese su punto de partida: ")
     fin = input("Ingrese su destino: ")
-    camino = dijkstra_camino_mas_corto(G, inicio, fin)
+    camino = dijkstra_custom(G, inicio, fin)
     
     if camino:
         plt.figure(figsize=(12, 12))
