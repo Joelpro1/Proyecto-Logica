@@ -1,7 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-# Crear un grafo no dirigido y ponderado
+# Crear un grafo no dirigido y ponderado w
 G = nx.Graph()
 
 # Lista de nodos basada en el listado que proporcionaste
@@ -99,56 +99,45 @@ edges = [
 # Añadir aristas y pesos al grafo
 G.add_weighted_edges_from(edges)
 
-# Función para calcular y resaltar el camino más corto entre dos nodos
-def camino_mas_corto(grafo, nodo_inicio, nodo_fin):
+# Algoritmo de Dijkstra
+def dijkstra_camino_mas_corto(grafo, inicio, fin):
     try:
-        camino = nx.shortest_path(grafo, source=nodo_inicio, target=nodo_fin, weight="weight")
-        distancia_total = nx.shortest_path_length(grafo, source=nodo_inicio, target=nodo_fin, weight="weight")
+        # Usar el algoritmo de Dijkstra en NetworkX
+        camino = nx.dijkstra_path(grafo, source=inicio, target=fin, weight="weight")
+        distancia_total = nx.dijkstra_path_length(grafo, source=inicio, target=fin, weight="weight")
         
-        print(f"\nCamino más corto entre {nodo_inicio} y {nodo_fin}:")
-        suma_distancias = 0
-        suma_grados = 0
+        print(f"\nCamino más corto entre {inicio} y {fin}:")
         for i in range(len(camino) - 1):
             origen, destino = camino[i], camino[i + 1]
             distancia = grafo[origen][destino]['weight']
-            suma_distancias += distancia
             print(f"   {origen} -> {destino}: {distancia} metros")
         
-        # Calcular grados de cada vértice en el camino
-        print("\nGrados de cada vértice en el camino:")
-        for nodo in camino:
-            grado = grafo.degree[nodo]
-            suma_grados += grado
-            print(f"   {nodo}: {grado}")
-
-        print(f"\nDistancia total del camino más corto: {suma_distancias} metros")
-        print(f"Suma total de los grados de los vértices en el camino: {suma_grados}\n")
+        print(f"\nDistancia total del camino más corto: {distancia_total} metros\n")
         
         return camino
     except nx.NetworkXNoPath:
-        print("No hay camino disponible entre", nodo_inicio, "y", nodo_fin)
+        print("No hay camino disponible entre", inicio, "y", fin)
         return None
     except nx.NodeNotFound:
         print("Uno o ambos nodos no existen en el grafo.")
         return None
 
 # Función para visualizar el grafo y el camino más corto
-def visualizar_camino_mas_corto():
+def visualizar_camino():
     print("Principales referencias en la Universidad: \n1. Edificio K1 \n2. Facultad Ingenieria \n3. Casa de Gobierno \n4. Capilla \n5. Living \n6. Edificio Ad1 \n7. Cafeteria AdPortas \n8. Edificio G(1) \n9. Embarcadero \n10. Cafeteria Embarcadero \n11. Edificio E1(1) \n12. Edificio E2 \n13. Edificio E1(2) \n14. Puente Madera \n15. Bienestar \n16. Meson \n17. Cafeteria Atelier \n18. Edificio F \n19. Edificio H \n20. Punto Wok \n21. Punto Verde \n22. Punto Sandwich \n23. Edificio B \n24. Edificio C \n25. Puesto HotDog \n26. Kioskos(1) \n27. Edificio A \n28. Biblioteca \n29. Edificio D2 \n30. Edificio O \n31. Edificio D1")
     print("Cualquier otra ubicacion que no este en las referencias por favor marque el numero del nodo (Ej. N#) ")
     inicio = input("Ingrese su punto de partida: ")
     fin = input("Ingrese su destino: ")
-    camino = camino_mas_corto(G, inicio, fin)
+    camino = dijkstra_camino_mas_corto(G, inicio, fin)
     
     if camino:
         plt.figure(figsize=(12, 12))
         nx.draw(G, nuevas_posiciones, with_labels=True, node_size=500, node_color="lightblue",
                 font_size=8, font_weight="bold", edge_color="gray")
-        # Resaltar el camino más corto en rojo
         camino_edges = list(zip(camino, camino[1:]))
         nx.draw_networkx_edges(G, nuevas_posiciones, edgelist=camino_edges, edge_color="red", width=3)
         plt.title(f"Camino más corto entre {inicio} y {fin}")
         plt.show()
 
-# Ejecutar la visualización con interacción de usuario
-visualizar_camino_mas_corto()
+# Ejecutar visualización con interacción de usuario
+visualizar_camino()
